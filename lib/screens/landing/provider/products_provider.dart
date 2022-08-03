@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:reedius_test/models/product.dart';
+import 'package:reedius_test/screens/landing/provider/product_controller.dart';
 
-enum QuantityUpdate { increment, decrement }
+// enum QuantityUpdate { increment, decrement }
 
 class ProductProvider extends ChangeNotifier {
   final List<Product> _products = [];
