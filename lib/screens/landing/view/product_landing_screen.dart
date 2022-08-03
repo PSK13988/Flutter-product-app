@@ -5,6 +5,7 @@ import 'package:reedius_test/di/locator.dart';
 import 'package:reedius_test/di/routes.dart';
 import 'package:reedius_test/models/product.dart';
 import 'package:reedius_test/screens/landing/provider/products_provider.dart';
+import 'package:reedius_test/screens/widgets/quantity_widget.dart';
 import 'package:reedius_test/utils/app_constants.dart';
 import 'package:reedius_test/utils/app_styles.dart';
 
@@ -28,7 +29,9 @@ class ProductLandingScreen extends StatelessWidget {
             badgeColor: Colors.red,
             itemColor: Colors.white,
             hideZero: true,
-            onTap: () {},
+            onTap: () {
+              context.read<ProductProvider>().cartProducts.forEach(print);
+            },
           ),
         ],
       ),
@@ -108,19 +111,27 @@ class CreateProductListView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _createText(text: product.name, style: AppStyles.listItemTitle),
+                      _createText(
+                          text: product.name, style: AppStyles.listItemTitle),
                       Row(
                         children: [
-                          _createText(text: '${AppConstants.rupeeSymbol} ${product.mrp}', style: AppStyles.listItemMrp),
+                          _createText(
+                              text:
+                                  '${AppConstants.rupeeSymbol} ${product.mrp}',
+                              style: AppStyles.listItemMrp),
                           const SizedBox(width: 15),
-                          _createText(text: '${product.price}', style: AppStyles.listItemPrice),
+                          _createText(
+                              text: '${product.price}',
+                              style: AppStyles.listItemPrice),
                         ],
                       ),
                       Container(
                         color: Colors.deepOrange,
                         child: Padding(
                           padding: const EdgeInsets.all(4.0),
-                          child: _createText(text: '${product.discount}% Discount', style: AppStyles.listItemDiscount),
+                          child: _createText(
+                              text: '${product.discount}% Discount',
+                              style: AppStyles.listItemDiscount),
                         ),
                       ),
                     ],
@@ -136,12 +147,12 @@ class CreateProductListView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       ElevatedButton(
-                        onPressed: () => context.read<ProductProvider>().addProductToCart(product),
+                        onPressed: () => context
+                            .read<ProductProvider>()
+                            .addProductToCart(product),
                         child: const Text(AppConstants.btnAddToCart),
                       ),
-                      QuantityWidget(
-                        product: product,
-                      ),
+                      QuantityWidgetWrapper(product: product),
                     ],
                   ),
                 )
@@ -151,13 +162,15 @@ class CreateProductListView extends StatelessWidget {
         ),
       );
 
-  Widget _createText({required String text, required TextStyle style}) => Text(text, style: style);
+  Widget _createText({required String text, required TextStyle style}) =>
+      Text(text, style: style);
 
   void _showBottomSheetDialog(BuildContext context, Product product) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(15.0), topRight: Radius.circular(15.0)),
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15.0), topRight: Radius.circular(15.0)),
       ),
       backgroundColor: Colors.white,
       builder: (context) {
@@ -166,7 +179,8 @@ class CreateProductListView extends StatelessWidget {
             ListTile(
               onTap: () {
                 locator<Routes>().pop(context);
-                locator<Routes>().navigateToAddProductScreen(context, product: product);
+                locator<Routes>()
+                    .navigateToAddProductScreen(context, product: product);
               },
               title: const Text(AppConstants.btnEdit),
             ),
@@ -193,7 +207,8 @@ class CreateProductListView extends StatelessWidget {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Are you sure you want to delete ${product.name} from product list.'),
+                Text(
+                    'Are you sure you want to delete ${product.name} from product list.'),
               ],
             ),
           ),
@@ -216,8 +231,8 @@ class CreateProductListView extends StatelessWidget {
   }
 }
 
-class QuantityWidget extends StatelessWidget {
-  const QuantityWidget({
+class QuantityWidgetWrapper extends StatelessWidget {
+  const QuantityWidgetWrapper({
     Key? key,
     required this.product,
   }) : super(key: key);
@@ -226,13 +241,14 @@ class QuantityWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text('Quantity'),
-        TextButton(onPressed: () => context.read<ProductProvider>().updateProductQuantity(product, QuantityUpdate.decrement), child: Text('-')),
-        Text('${product.quantity}'),
-        TextButton(onPressed: () => context.read<ProductProvider>().updateProductQuantity(product, QuantityUpdate.increment), child: Text('+')),
-      ],
+    return QuantityWidget(
+      product: product,
+      onDecrement: () => context
+          .read<ProductProvider>()
+          .updateProductQuantity(product, QuantityUpdate.decrement),
+      onIncrement: () => context
+          .read<ProductProvider>()
+          .updateProductQuantity(product, QuantityUpdate.increment),
     );
   }
 }
