@@ -40,6 +40,8 @@ dependencies:
   equatable: ^2.0.3
   icon_badge: ^1.0.0
   get_it: ^7.2.0
+  riverpod: ^1.0.3
+  flutter_riverpod: ^1.0.3
 
 dev_dependencies:
   flutter_test:

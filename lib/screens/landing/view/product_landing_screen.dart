@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icon_badge/icon_badge.dart';
 import 'package:provider/provider.dart';
 import 'package:reedius_test/di/locator.dart';
 import 'package:reedius_test/di/routes.dart';
+import 'package:reedius_test/main.dart';
 import 'package:reedius_test/models/product.dart';
 import 'package:reedius_test/screens/landing/provider/products_provider.dart';
+import 'package:reedius_test/screens/landing/provider/products_riverpod.dart';
 import 'package:reedius_test/utils/app_constants.dart';
 import 'package:reedius_test/utils/app_styles.dart';
 
-class ProductLandingScreen extends StatelessWidget {
+class ProductLandingScreen extends ConsumerWidget {
   const ProductLandingScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => createLayout(context);
+  Widget build(BuildContext context, WidgetRef ref) =>
+      createLayout(context, ref);
 
-  Widget createLayout(BuildContext context) {
+  Widget createLayout(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -24,7 +28,7 @@ class ProductLandingScreen extends StatelessWidget {
         actions: [
           IconBadge(
             icon: const Icon(Icons.shopping_cart),
-            itemCount: context.watch<ProductProvider>().cartCount,
+            itemCount: ref.watch(productCartRiverpod).length,
             badgeColor: Colors.red,
             itemColor: Colors.white,
             hideZero: true,
@@ -82,82 +86,94 @@ class SearchWidget extends StatelessWidget {
   }
 }
 
-class CreateProductListView extends StatelessWidget {
+class CreateProductListView extends ConsumerWidget {
   const CreateProductListView({
     Key? key,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Consumer<ProductProvider>(
-        builder: (context, productProvider, _) => ListView.separated(
-          padding: const EdgeInsets.only(bottom: 56),
-          itemCount: productProvider.products.length,
-          separatorBuilder: (BuildContext context, int index) {
-            return const Divider();
-          },
-          itemBuilder: (BuildContext context, int index) {
-            final product = productProvider.products[index];
-            return Column(
-              children: [
-                ListTile(
-                  leading: Icon(
-                    Icons.category,
-                    size: 70,
-                  ),
-                  title: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final products = ref.watch(productRiverpod);
+    return ListView.separated(
+      padding: const EdgeInsets.only(bottom: 56),
+      itemCount: products.length,
+      separatorBuilder: (BuildContext context, int index) {
+        return const Divider();
+      },
+      itemBuilder: (BuildContext context, int index) {
+        final product = products[index];
+        return Column(
+          children: [
+            ListTile(
+              leading: Icon(
+                Icons.category,
+                size: 70,
+              ),
+              title: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _createText(
+                      text: product.name, style: AppStyles.listItemTitle),
+                  Row(
                     children: [
-                      _createText(text: product.name, style: AppStyles.listItemTitle),
-                      Row(
-                        children: [
-                          _createText(text: '${AppConstants.rupeeSymbol} ${product.mrp}', style: AppStyles.listItemMrp),
-                          const SizedBox(width: 15),
-                          _createText(text: '${product.price}', style: AppStyles.listItemPrice),
-                        ],
-                      ),
-                      Container(
-                        color: Colors.deepOrange,
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: _createText(text: '${product.discount}% Discount', style: AppStyles.listItemDiscount),
-                        ),
-                      ),
+                      _createText(
+                          text: '${AppConstants.rupeeSymbol} ${product.mrp}',
+                          style: AppStyles.listItemMrp),
+                      const SizedBox(width: 15),
+                      _createText(
+                          text: '${product.price}',
+                          style: AppStyles.listItemPrice),
                     ],
                   ),
-                  trailing: GestureDetector(
-                    child: const Icon(Icons.more_horiz),
-                    onTap: () => _showBottomSheetDialog(context, product),
+                  Container(
+                    color: Colors.deepOrange,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: _createText(
+                          text: '${product.discount}% Discount',
+                          style: AppStyles.listItemDiscount),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => context.read<ProductProvider>().addProductToCart(product),
-                        child: const Text(AppConstants.btnAddToCart),
-                      ),
-                      QuantityWidget(
-                        product: product,
-                      ),
-                    ],
+                ],
+              ),
+              trailing: GestureDetector(
+                child: const Icon(Icons.more_horiz),
+                onTap: () => _showBottomSheetDialog(context, product),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => ref
+                        .read(productCartRiverpod.notifier)
+                        .addProductToCart(product),
+                    child: const Text(AppConstants.btnAddToCart),
                   ),
-                )
-              ],
-            );
-          },
-        ),
-      );
+                  QuantityWidget(
+                    product: product,
+                  ),
+                ],
+              ),
+            )
+          ],
+        );
+      },
+    );
+  }
 
-  Widget _createText({required String text, required TextStyle style}) => Text(text, style: style);
+  Widget _createText({required String text, required TextStyle style}) =>
+      Text(text, style: style);
 
   void _showBottomSheetDialog(BuildContext context, Product product) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(15.0), topRight: Radius.circular(15.0)),
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15.0), topRight: Radius.circular(15.0)),
       ),
       backgroundColor: Colors.white,
       builder: (context) {
@@ -166,7 +182,8 @@ class CreateProductListView extends StatelessWidget {
             ListTile(
               onTap: () {
                 locator<Routes>().pop(context);
-                locator<Routes>().navigateToAddProductScreen(context, product: product);
+                locator<Routes>()
+                    .navigateToAddProductScreen(context, product: product);
               },
               title: const Text(AppConstants.btnEdit),
             ),
@@ -193,7 +210,8 @@ class CreateProductListView extends StatelessWidget {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Are you sure you want to delete ${product.name} from product list.'),
+                Text(
+                    'Are you sure you want to delete ${product.name} from product list.'),
               ],
             ),
           ),
@@ -216,7 +234,7 @@ class CreateProductListView extends StatelessWidget {
   }
 }
 
-class QuantityWidget extends StatelessWidget {
+class QuantityWidget extends ConsumerWidget {
   const QuantityWidget({
     Key? key,
     required this.product,
@@ -225,13 +243,21 @@ class QuantityWidget extends StatelessWidget {
   final Product product;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
         Text('Quantity'),
-        TextButton(onPressed: () => context.read<ProductProvider>().updateProductQuantity(product, QuantityUpdate.decrement), child: Text('-')),
-        Text('${product.quantity}'),
-        TextButton(onPressed: () => context.read<ProductProvider>().updateProductQuantity(product, QuantityUpdate.increment), child: Text('+')),
+        TextButton(
+            onPressed: () => ref
+                .read(productRiverpod.notifier)
+                .updateProductQuantity(product, QuantityUpdate.decrement),
+            child: Text('-')),
+        Text(product.quantity.toString()),
+        TextButton(
+            onPressed: () => ref
+                .read(productRiverpod.notifier)
+                .updateProductQuantity(product, QuantityUpdate.increment),
+            child: Text('+')),
       ],
     );
   }

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
 import 'package:reedius_test/di/locator.dart';
+import 'package:reedius_test/models/product.dart';
 import 'package:reedius_test/screens/landing/provider/products_provider.dart';
+import 'package:reedius_test/screens/landing/provider/products_riverpod.dart';
 import 'package:reedius_test/screens/landing/view/product_landing_screen.dart';
 
 void main() {
   setupLocator();
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -20,10 +23,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ChangeNotifierProvider(
-        create: (_) => locator<ProductProvider>(),
-        child: locator<ProductLandingScreen>(),
-      ),
+      home: locator<ProductLandingScreen>(),
     );
   }
 }
