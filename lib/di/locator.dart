@@ -15,7 +15,7 @@ setupLocator() {
       () => ProductAddEditProvider());
   locator.registerLazySingleton<AppStyles>(() => AppStyles());
   locator.registerLazySingleton<AppConstants>(() => AppConstants());
-  locator.registerLazySingleton<Routes>(() => Routes());
+  locator.registerLazySingleton<Routes>(() => RoutesImpl());
 
   // Register factories
   locator.registerFactory<ProductLandingScreen>(

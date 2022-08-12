@@ -5,8 +5,14 @@ import 'package:reedius_test/models/product.dart';
 import 'package:reedius_test/screens/product_add_update/provider/product_add_edit_provider.dart';
 import 'package:reedius_test/screens/product_add_update/view/product_add_edit_screen.dart';
 
-class Routes {
-  navigateToAddProductScreen(BuildContext context, {Product? product}) =>
+abstract class Routes {
+  void navigateToAddProductScreen(BuildContext context, {Product? product});
+  void pop(BuildContext context);
+}
+
+class RoutesImpl extends Routes {
+  @override
+  void navigateToAddProductScreen(BuildContext context, {Product? product}) =>
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -17,5 +23,6 @@ class Routes {
         ),
       );
 
-  pop(BuildContext context) => Navigator.pop(context);
+  @override
+  void pop(BuildContext context) => Navigator.pop(context);
 }
