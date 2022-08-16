@@ -11,6 +11,12 @@ abstract class Routes {
 }
 
 class RoutesImpl extends Routes {
+  final int data1;
+  final String data2;
+  final Product product;
+
+  RoutesImpl({required this.data1, required this.data2, required this.product});
+
   @override
   void navigateToAddProductScreen(BuildContext context, {Product? product}) =>
       Navigator.push(
